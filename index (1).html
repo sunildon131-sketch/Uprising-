@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Uprising — Sunil Jaat</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-dim: #7a6330;
+  --bg: #0a0a0a;
+  --bg2: #111111;
+  --bg3: #1a1a1a;
+  --bg4: #222222;
+  --text: #e8e6e0;
+  --text2: #9a9690;
+  --text3: #5a5650;
+  --border: rgba(201,168,76,0.15);
+  --border2: rgba(201,168,76,0.3);
+  --purple: #7c5cbf;
+  --teal: #2a9d8f;
+  --red: #e63946;
+  --green: #2d6a4f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+/* Layout */
+.app { display: flex; flex-direction: column; min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+/* Header */
+.header {
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 0.5px solid var(--border);
+  background: linear-gradient(180deg, rgba(201,168,76,0.05) 0%, transparent 100%);
+}
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+.player-name { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: 0.05em; }
+.player-sub { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
+.day-badge { background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--gold); font-family: 'Cinzel', serif; }
+
+/* XP Bar */
+.xp-wrap { margin-bottom: 0.75rem; }
+.xp-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-bottom: 5px; }
+.xp-bar { height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 2px; transition: width 0.6s ease; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--bg3); border: 0.5px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; }
+.stat-val { font-size: 20px; font-weight: 600; color: var(--gold); font-family: 'Cinzel', serif; }
+.stat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Nav */
+.nav { display: flex; padding: 0 1.5rem; border-bottom: 0.5px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 10; }
+.nav-btn { flex: 1; padding: 12px 4px; font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* Content */
+.content { flex: 1; padding: 1.25rem 1.5rem; overflow-y: auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Section label */
+.sec-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; margin-top: 1.25rem; }
+.sec-label:first-child { margin-top: 0; }
+
+/* Quest cards */
+.quest { display: flex; gap: 12px; align-items: flex-start; padding: 0.875rem 1rem; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s; }
+.quest:hover { border-color: var(--border2); }
+.quest.done { opacity: 0.45; }
+.quest.done .quest-title { text-decoration: line-through; }
+.quest-check { width: 22px; height: 22px; border: 1.5px solid var(--border2); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-top: 1px; transition: all 0.2s; }
+.quest.done .quest-check { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.quest-body { flex: 1; }
+.quest-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.quest-desc { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+.quest-xp { font-size: 11px; color: var(--gold-dim); margin-top: 5px; }
+
+/* Buttons */
+.btn-gold { width: 100%; padding: 12px; background: none; border: 1px solid var(--gold-dim); border-radius: 8px; color: var(--gold); font-size: 13px; cursor: pointer; margin-top: 8px; font-family: 'Inter', sans-serif; letter-spacing: 0.03em; transition: all 0.2s; }
+.btn-gold:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
+.btn-ghost { width: 100%; padding: 10px; background: none; border: 0.5px solid var(--border2); border-radius: 8px; color: var(--text2); font-size: 12px; cursor: pointer; margin-top: 6px; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+.btn-ghost:hover { background: var(--bg3); }
+
+/* Wisdom */
+.wisdom-box { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; overflow: hidden; }
+.wisdom-box::before { content: '"'; font-family: 'Cinzel', serif; font-size: 80px; color: var(--gold); opacity: 0.07; position: absolute; top: -10px; left: 10px; line-height: 1; }
+.wisdom-text { font-size: 15px; color: var(--text); line-height: 1.75; font-style: italic; position: relative; }
+.wisdom-src { font-size: 11px; color: var(--gold-dim); margin-top: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Pillars */
+.pillar { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 0.875rem 1rem; margin-bottom: 8px; }
+.pillar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.pillar-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.pillar-pct { font-size: 12px; color: var(--text3); }
+.pillar-desc { font-size: 12px; color: var(--text2); margin-bottom: 8px; line-height: 1.5; }
+.pillar-bar { height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.pillar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+/* Wealth */
+.wealth-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 8px; }
+.wealth-stage { font-size: 11px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.wealth-target { font-size: 18px; font-weight: 600; color: var(--gold); font-family: 'Cinzel', serif; margin-bottom: 6px; }
+.wealth-how { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.progress-wrap { margin: 1rem 0; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.progress-bar { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), #52b788); border-radius: 3px; }
+
+/* Journal */
+.journal-entry { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 8px; }
+.journal-date { font-size: 11px; color: var(--gold-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+.journal-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+textarea { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; resize: none; line-height: 1.6; outline: none; }
+textarea:focus { border-color: var(--gold-dim); }
+textarea::placeholder { color: var(--text3); }
+
+/* AI Chat */
+.chat-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 1rem; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+.msg { max-width: 88%; }
+.msg.user { align-self: flex-end; }
+.msg.ai { align-self: flex-start; }
+.msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+.msg.user .msg-bubble { background: var(--gold-dim); color: var(--text); border-bottom-right-radius: 4px; }
+.msg.ai .msg-bubble { background: var(--bg3); border: 0.5px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+.msg-name { font-size: 10px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; background: var(--bg); padding-top: 8px; }
+.chat-input-wrap textarea { flex: 1; min-height: 44px; max-height: 100px; padding: 10px 12px; font-size: 14px; }
+.send-btn { width: 44px; height: 44px; background: var(--gold-dim); border: none; border-radius: 8px; cursor: pointer; color: var(--bg); font-size: 18px; flex-shrink: 0; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+.send-btn:hover { background: var(--gold); }
+.typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; background: var(--bg3); border: 0.5px solid var(--border); border-radius: 12px; border-bottom-left-radius: 4px; width: fit-content; }
+.dot { width: 6px; height: 6px; background: var(--text3); border-radius: 50%; animation: bounce 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+/* Smoke counter */
+.smoke-hero { text-align: center; padding: 2rem 1rem; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; margin-bottom: 1rem; }
+.smoke-num { font-size: 56px; font-weight: 700; color: var(--teal); font-family: 'Cinzel', serif; line-height: 1; }
+.smoke-label { font-size: 13px; color: var(--text2); margin-top: 8px; }
+.smoke-msg { font-size: 12px; color: var(--text3); margin-top: 12px; font-style: italic; line-height: 1.5; }
+
+/* Notification */
+.notif { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--bg3); border: 0.5px solid var(--gold); border-radius: 8px; padding: 10px 20px; font-size: 13px; color: var(--gold); z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.notif.show { opacity: 1; }
+
+/* Mobile bottom safe area */
+@media (max-width: 480px) {
+  .content { padding-bottom: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="player-name">Sunil Jaat</div>
+        <div class="player-sub">The Uprising · Training Arc · Day <span id="day-count">1</span></div>
+      </div>
+      <div class="day-badge">LVL <span id="cur-level">1</span></div>
+    </div>
+    <div class="xp-wrap">
+      <div class="xp-label"><span>XP</span><span><span id="cur-xp">0</span> / <span id="max-xp">100</span></span></div>
+      <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" id="s-mind">12</div><div class="stat-lbl">Mind</div></div>
+      <div class="stat"><div class="stat-val" id="s-body">15</div><div class="stat-lbl">Body</div></div>
+      <div class="stat"><div class="stat-val" id="s-disc">10</div><div class="stat-lbl">Tapas</div></div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('quests')">Quests</button>
+    <button class="nav-btn" onclick="switchTab('chanakya')">Chanakya</button>
+    <button class="nav-btn" onclick="switchTab('pillars')">Pillars</button>
+    <button class="nav-btn" onclick="switchTab('wealth')">Wealth</button>
+    <button class="nav-btn" onclick="switchTab('journal')">Journal</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- QUESTS -->
+    <div class="tab-panel active" id="tab-quests">
+      <div class="smoke-hero" style="padding:1rem; margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Smoke-free</div>
+            <div style="font-size:32px;font-weight:700;color:var(--teal);font-family:'Cinzel',serif;" id="smoke-days">5</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Streak</div>
+            <div style="font-size:32px;font-weight:700;color:var(--gold);font-family:'Cinzel',serif;" id="streak-days">0</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">XP Total</div>
+            <div style="font-size:32px;font-weight:700;color:var(--purple);font-family:'Cinzel',serif;" id="total-xp-disp">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-label">Today's quests</div>
+      <div id="quest-list"></div>
+      <button class="btn-ghost" onclick="resetDay()">✦ New day — reset quests</button>
+    </div>
+
+    <!-- CHANAKYA AI -->
+    <div class="tab-panel" id="tab-chanakya">
+      <div class="sec-label">Chanakya speaks</div>
+      <div class="wisdom-box" id="wisdom-box">
+        <div class="wisdom-text" id="wisdom-text">Loading the teachings...</div>
+        <div class="wisdom-src" id="wisdom-src"></div>
+      </div>
+      <button class="btn-ghost" onclick="nextWisdom()">Next teaching →</button>
+
+      <div class="sec-label" style="margin-top:1.5rem;">Ask your Chanakya</div>
+      <div class="chat-wrap" id="chat-wrap"></div>
+      <div class="chat-input-wrap">
+        <textarea id="chat-input" placeholder="Ask anything — wealth, discipline, life..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+
+    <!-- PILLARS -->
+    <div class="tab-panel" id="tab-pillars">
+      <div class="sec-label">Your 6 pillars</div>
+      <div id="pillar-list"></div>
+      <button class="btn-gold" onclick="askChanakya('Which of my 6 pillars needs the most work right now and give me a specific 7-day action plan for it?')">Ask Chanakya — which pillar to focus on ↗</button>
+    </div>
+
+    <!-- WEALTH -->
+    <div class="tab-panel" id="tab-wealth">
+      <div class="sec-label">Mission — reach ₹1,00,000/month</div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Current: ₹10,000</span><span>Target: ₹1,00,000</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;text-align:right;">10% of mission complete</div>
+      </div>
+
+      <div class="sec-label">Your 3-stage roadmap</div>
+      <div class="wealth-card">
+        <div class="wealth-stage">Stage 1 — Right now</div>
+        <div class="wealth-target">₹25,000 / month</div>
+        <div class="wealth-how">Get 2 more SSM clients at ₹7-8k each. Use the Aecone reel as proof of work. Build a simple one-page portfolio. Start cold DMs to small Indian businesses on Instagram today.</div>
+      </div>
+      <div class="wealth-card">
+        <div class="wealth-stage">Stage 2 — Month 3</div>
+        <div class="wealth-target">₹50,000 / month</div>
+        <div class="wealth-how">Add Meta or Google performance ad management for existing clients. Charge ₹15-20k per client for ad management + content. Learn one platform deeply — not both.</div>
+      </div>
+      <div class="wealth-card">
+        <div class="wealth-stage">Stage 3 — Month 6</div>
+        <div class="wealth-target">₹1,00,000 / month</div>
+        <div class="wealth-how">4-5 clients at ₹20-25k OR launch your own personal brand content with monetisation. By this point your skills, portfolio, and reputation do the selling for you.</div>
+      </div>
+
+      <div class="sec-label" style="margin-top:1.5rem;">Real World advice</div>
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1rem;font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+        Stay in Copywriting + SSM. Don't add a 3rd campus. Use TRW for frameworks only — your real education is happening in Mumbai with real clients. The Aecone reel you made is worth more than 6 months of campus lessons.
+      </div>
+      <button class="btn-gold" onclick="askChanakya('Give me a detailed 90-day income plan to go from 10000 to 50000 rupees per month as a performance marketer and content creator in India in 2025')">Build my 90-day income plan ↗</button>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="tab-panel" id="tab-journal">
+      <div class="sec-label">Write to 30-year-old Sunil</div>
+      <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1rem;font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:1rem;">
+        He is watching you right now. What did you do today? Be honest. He doesn't want excuses — he wants to see who you became.
+      </div>
+      <textarea id="journal-input" placeholder="Today I..." rows="6"></textarea>
+      <button class="btn-gold" onclick="saveJournal()" style="margin-top:8px;">Save entry</button>
+
+      <div class="sec-label" style="margin-top:1.5rem;">Past entries</div>
+      <div id="journal-entries"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QUESTS = [
+  {id:'q1',title:'Morning anchor',desc:'Wake up, drink water, 10 mins of silence. No phone. Just you.',xp:10},
+  {id:'q2',title:'Move your body',desc:'Gym, run, or walk — minimum 30 mins. Your body is your first weapon.',xp:15},
+  {id:'q3',title:'Read one page',desc:'Gita, Chanakya Niti, or any strategy book. Write one line about what it means to YOUR life.',xp:10},
+  {id:'q4',title:'Stranger mission',desc:'Have a real conversation with one stranger today. Chai shop, lift, anywhere. No agenda.',xp:20},
+  {id:'q5',title:'One skill block',desc:'1 hour of focused learning — performance marketing or video editing. Phone face down.',xp:15},
+  {id:'q6',title:'The observer',desc:'Sit somewhere public for 20 mins with no phone. Watch people. Notice patterns.',xp:15},
+  {id:'q7',title:'No garbage consumption',desc:'Zero mindless scrolling. Every urge — do 10 pushups instead.',xp:15},
+  {id:'q8',title:'Cold water',desc:'End your shower with 60 seconds of cold water. Do not negotiate with yourself.',xp:10},
+];
+
+const WISDOM = [
+  {text:'Before you start some work, always ask yourself three questions — why am I doing it, what the results might be, and will I be successful. Only when you think deeply and find satisfactory answers, proceed.',src:'Chanakya Niti'},
+  {text:'A person should not be too honest. Straight trees are cut first and honest people are tested first. Know the world as it is, not as you wish it to be.',src:'Chanakya Niti'},
+  {text:'As soon as fear approaches near — attack and destroy it. Your discomfort is not a warning. It is a signal to move forward.',src:'Chanakya Niti'},
+  {text:'Even if a snake is not poisonous, it should pretend to be venomous. Carry yourself with power before the world gives you a reason to.',src:'Chanakya Niti'},
+  {text:'Once you start working on something, do not be afraid of failure and do not abandon it. People who work sincerely are the happiest.',src:'Chanakya Niti'},
+  {text:'The fragrance of flowers spreads only in the direction of the wind. But the goodness of a person spreads in all directions.',src:'Chanakya Niti'},
+  {text:'Education is the best friend. An educated person is respected everywhere. Education beats the beauty of youth and the beauty of youth fades away.',src:'Chanakya Niti'},
+  {text:'Do not reveal what you have thought upon doing, but by wise counsel keep it secret, being determined to carry it into execution.',src:'Arthashastra'},
+  {text:'The world is like a market. You can buy anything with effort. Nothing comes free. Stop waiting for destiny — go out and earn it.',src:'Arthashastra'},
+  {text:'A man is great by deeds, not by birth. The fire tests gold, trials test a warrior. What are you being tested on right now?',src:'Chanakya Niti'},
+  {text:'Set your heart on doing good. Do it over and over again, and you will be filled with joy. The one who blessed Kalanamak rice said this to a village — he says it to you too.',src:'Dhammapada'},
+  {text:'He who is overly attached to his family members experiences fear and sorrow. The root of all suffering is attachment. Detach from the outcome. Be attached only to the work.',src:'Chanakya Niti'},
+];
+
+const PILLARS = [
+  {name:'Mind',desc:'Reading, Gita, pattern recognition, strategic thinking.',color:'#7c5cbf',base:20},
+  {name:'Body',desc:'Gym, boxing, nutrition, sleep. Your physical presence commands respect.',color:'#2a9d8f',base:35},
+  {name:'Craft',desc:'Performance marketing, content creation, editing. Your path to financial freedom.',color:'#c9a84c',base:25},
+  {name:'Discipline',desc:'No porn, no mindless scroll, no smoke. Every urge resisted is a stat gained.',color:'#e63946',base:30},
+  {name:'Wealth',desc:'Income building, financial literacy, value creation. 10k → 1 lac.',color:'#52b788',base:10},
+  {name:'Character',desc:'Honesty, loyalty, vision. Who you are in private shows up everywhere.',color:'#a8c5da',base:40},
+];
+
+const SYSTEM_PROMPT = `You are Chanakya — the ancient Indian strategist, philosopher, and teacher who guided Chandragupta Maurya from nothing to building the Maurya Empire. But you speak in modern, direct language.
+
+You are advising Sunil Jaat — a 22-year-old performance marketer in Mumbai, India. Here is everything you know about him:
+
+- Just turned 22 in April
+- Works from home, handles social media marketing for a company earning ₹10,000/month
+- Goal: reach ₹1,00,000/month income
+- Skills: performance marketing setup, content creation, learning video editing, very creative, strong pattern recognition and psychology
+- Quit smoking cold turkey — Day 5 of being smoke-free
+- Recently quit heavy social media consumption
+- Getting back to gym after a break — was very athletic growing up
+- Plans to start boxing next month
+- Lives with his father in Mumbai, father is a devout Hindu who wakes at 4am
+- Recently went through a deep betrayal by a close cousin/friend — this was his wake-up call
+- Was in a high-level college he couldn't fully afford, got caught in bad patterns there
+- Has a deep desire to help people and make the world a better place — hasn't told anyone this
+- Is subscribed to Andrew Tate's Real World — Copywriting and SSM campuses
+- Inspired by Solo Leveling (Jin Woo) and historical conquerors like Chandragupta Maurya, Alexander
+- His generational patterns, comfort cycles, and trauma are real obstacles he is actively fighting
+- He gets bored easily — his dopamine is depleted from years of overstimulation
+- He is deeply intelligent and creative but has been sleeping — he is now awake
+
+Your job:
+- Give him SPECIFIC, actionable advice — not motivational fluff
+- Reference his actual situation, his Mumbai context, the Indian market
+- Be direct, even harsh when needed — he can handle it
+- Draw from Chanakya Niti, Arthashastra, Gita, and ancient wisdom when relevant
+- Remind him of his potential without feeding his ego
+- Keep responses focused — 3-5 paragraphs max unless he needs a detailed plan
+- Occasionally reference historical examples (Chandragupta, Alexander, Shivaji) that are relevant
+- You believe in him. But belief without action is nothing — always end with what he should DO next.`;
+
+let state = JSON.parse(localStorage.getItem('uprising_v2') || 'null') || {
+  xp: 0, level: 1, totalXp: 0,
+  completedQuests: [],
+  wisdomIndex: 0,
+  smokeStartDate: new Date(Date.now() - 4*86400000).toISOString(),
+  startDate: new Date().toISOString(),
+  lastResetDate: new Date().toDateString(),
+  streak: 0,
+  journalEntries: [],
+  chatHistory: [],
+};
+
+function save() { localStorage.setItem('uprising_v2', JSON.stringify(state)); }
+
+function getDayCount() {
+  const start = new Date(state.startDate);
+  return Math.max(1, Math.floor((Date.now() - start) / 86400000) + 1);
+}
+
+function getSmokeDays() {
+  const start = new Date(state.smokeStartDate);
+  return Math.floor((Date.now() - start) / 86400000);
+}
+
+function renderHeader() {
+  const xpNeeded = state.level * 100;
+  document.getElementById('cur-level').textContent = state.level;
+  document.getElementById('cur-xp').textContent = state.xp;
+  document.getElementById('max-xp').textContent = xpNeeded;
+  document.getElementById('xp-fill').style.width = Math.min(100, Math.round((state.xp / xpNeeded) * 100)) + '%';
+  document.getElementById('day-count').textContent = getDayCount();
+  document.getElementById('smoke-days').textContent = getSmokeDays();
+  document.getElementById('streak-days').textContent = state.streak;
+  document.getElementById('total-xp-disp').textContent = state.totalXp;
+  const mind = 12 + Math.floor(state.level * 0.8);
+  const body = 15 + Math.floor(state.streak * 0.4);
+  const disc = 10 + getSmokeDays() + Math.floor(state.streak * 0.3);
+  document.getElementById('s-mind').textContent = mind;
+  document.getElementById('s-body').textContent = body;
+  document.getElementById('s-disc').textContent = disc;
+}
+
+function addXP(amount) {
+  state.xp += amount;
+  state.totalXp += amount;
+  const needed = state.level * 100;
+  if (state.xp >= needed) { state.xp -= needed; state.level++; showNotif('LEVEL UP! You are now Level ' + state.level); }
+  save();
+  renderHeader();
+}
+
+function showNotif(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function renderQuests() {
+  const list = document.getElementById('quest-list');
+  list.innerHTML = '';
+  QUESTS.forEach(q => {
+    const done = state.completedQuests.includes(q.id);
+    const div = document.createElement('div');
+    div.className = 'quest' + (done ? ' done' : '');
+    div.innerHTML = `<div class="quest-check">${done ? '✓' : ''}</div><div class="quest-body"><div class="quest-title">${q.title}</div><div class="quest-desc">${q.desc}</div><div class="quest-xp">+${q.xp} XP</div></div>`;
+    div.onclick = () => {
+      const idx = state.completedQuests.indexOf(q.id);
+      if (idx === -1) { state.completedQuests.push(q.id); addXP(q.xp); showNotif('+' + q.xp + ' XP — ' + q.title); if(state.completedQuests.length >= QUESTS.length) { state.streak++; showNotif('ALL QUESTS DONE. Streak: ' + state.streak + ' days. Warrior.'); } }
+      else { state.completedQuests.splice(idx, 1); }
+      save(); renderQuests();
+    };
+    list.appendChild(div);
+  });
+}
+
+function resetDay() {
+  if (!confirm('Start a new day? This resets today\'s quests.')) return;
+  state.completedQuests = [];
+  save(); renderQuests(); showNotif('New day. New battles. Same mission.');
+}
+
+function renderWisdom() {
+  const w = WISDOM[state.wisdomIndex % WISDOM.length];
+  document.getElementById('wisdom-text').textContent = w.text;
+  document.getElementById('wisdom-src').textContent = '— ' + w.src;
+}
+
+function nextWisdom() {
+  state.wisdomIndex = (state.wisdomIndex + 1) % WISDOM.length;
+  save(); renderWisdom();
+}
+
+function renderPillars() {
+  const list = document.getElementById('pillar-list');
+  list.innerHTML = '';
+  PILLARS.forEach(p => {
+    const progress = Math.min(95, p.base + state.level * 2 + Math.floor(state.streak * 0.5));
+    const div = document.createElement('div');
+    div.className = 'pillar';
+    div.innerHTML = `<div class="pillar-top"><span class="pillar-name">${p.name}</span><span class="pillar-pct">${progress}%</span></div><div class="pillar-desc">${p.desc}</div><div class="pillar-bar"><div class="pillar-fill" style="width:${progress}%;background:${p.color}"></div></div>`;
+    list.appendChild(div);
+  });
+}
+
+function renderJournal() {
+  const container = document.getElementById('journal-entries');
+  container.innerHTML = '';
+  const entries = [...state.journalEntries].reverse();
+  if (entries.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:1rem;">No entries yet. Start writing.</div>';
+    return;
+  }
+  entries.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'journal-entry';
+    div.innerHTML = `<div class="journal-date">${e.date}</div><div class="journal-text">${e.text.replace(/\n/g,'<br>')}</div>`;
+    container.appendChild(div);
+  });
+}
+
+function saveJournal() {
+  const text = document.getElementById('journal-input').value.trim();
+  if (!text) return;
+  const now = new Date();
+  state.journalEntries.push({ date: now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'}), text });
+  addXP(20);
+  save();
+  document.getElementById('journal-input').value = '';
+  renderJournal();
+  showNotif('+20 XP — Words written. Truth recorded.');
+}
+
+function renderChat() {
+  const wrap = document.getElementById('chat-wrap');
+  wrap.innerHTML = '';
+  if (state.chatHistory.length === 0) {
+    const welcome = document.createElement('div');
+    welcome.className = 'msg ai';
+    welcome.innerHTML = '<div class="msg-name">Chanakya</div><div class="msg-bubble">Sunil. I have been watching your training arc begin. Ask me anything — about wealth, discipline, your path, or the battles ahead. I will not comfort you. I will guide you.</div>';
+    wrap.appendChild(welcome);
+    return;
+  }
+  state.chatHistory.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + m.role;
+    div.innerHTML = `<div class="msg-name">${m.role === 'user' ? 'Sunil' : 'Chanakya'}</div><div class="msg-bubble">${m.content.replace(/\n/g,'<br>')}</div>`;
+    wrap.appendChild(div);
+  });
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  const wrap = document.getElementById('chat-wrap');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="msg-name">Chanakya</div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+
+  state.chatHistory.push({ role: 'user', content: text });
+  renderChat();
+  showTyping();
+  save();
+
+  // Build Gemini conversation history (last 10 messages)
+  const history = state.chatHistory.slice(-11, -1).map(m => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }]
+  }));
+
+  const GEMINI_KEY = 'AIzaSyAR1D45xh-ye5uVIE_9xW0W8IFhZ5SniC0';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [
+          ...history,
+          { role: 'user', parts: [{ text }] }
+        ],
+        generationConfig: { maxOutputTokens: 1000, temperature: 0.8 }
+      })
+    });
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'The teaching is unclear. Ask again.';
+    removeTyping();
+    state.chatHistory.push({ role: 'ai', content: reply });
+    save();
+    renderChat();
+  } catch(e) {
+    removeTyping();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'msg ai';
+    errDiv.innerHTML = '<div class="msg-name">Chanakya</div><div class="msg-bubble">The connection was lost. Check your internet and try again.</div>';
+    document.getElementById('chat-wrap').appendChild(errDiv);
+  }
+}
+
+function askChanakya(question) {
+  switchTab('chanakya');
+  document.getElementById('chat-input').value = question;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabs = ['quests','chanakya','pillars','wealth','journal'];
+  document.querySelectorAll('.nav-btn')[tabs.indexOf(tab)].classList.add('active');
+  if (tab === 'chanakya') renderChat();
+}
+
+renderHeader();
+renderQuests();
+renderWisdom();
+renderPillars();
+renderJournal();
+</script>
+</body>
+</html>
